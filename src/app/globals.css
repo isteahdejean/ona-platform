@@ -1,0 +1,37 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Couleurs officielles de l'ONA, echantillonnees directement depuis le logo
+   fourni (public/logo-ona.jpg), + une couleur d'accent distincte par espace
+   pour donner du relief tout en restant dans la meme famille institutionnelle. */
+:root {
+  --ona-primary: #0f3d9d;
+  --ona-primary-dark: #173363;
+  --ona-accent: #e40d37;
+  --ona-bg: #f5f6f4;
+  --ona-surface: #ffffff;
+  --ona-text: #16202b;
+  --ona-text-muted: #5b6570;
+  --ona-border: #dde1e4;
+
+  /* Accents par espace : producteurs (bleu), assures (sarcelle), pensionnes (or), direction (rouge) */
+  --ona-teal: #0f7a72;
+  --ona-teal-bg: #ecf7f6;
+  --ona-gold: #b8791f;
+  --ona-gold-bg: #fbf1e2;
+  --ona-blue-bg: #eaeffb;
+  --ona-red-bg: #fce9ec;
+  --ona-violet: #5f3dc4;
+  --ona-violet-bg: #efe9fb;
+}
+
+body {
+  background-color: var(--ona-bg);
+  color: var(--ona-text);
+}
+
+:focus-visible {
+  outline: 2px solid var(--ona-accent);
+  outline-offset: 2px;
+}
