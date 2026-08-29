@@ -9,6 +9,25 @@ import {
   MessageSquare,
 } from "lucide-react";
 import { prisma } from "@/lib/prisma";
+import Slideshow from "@/components/Slideshow";
+
+const DIAPOS = [
+  {
+    src: "/batiment-ona.gif",
+    alt: "Bâtiment de l'ONA",
+    legende: "Siège de l'Office National d'Assurance-Vieillesse",
+  },
+  {
+    src: "/directrice-generale.jpg",
+    alt: "Mme Lovely François",
+    legende: "Mme Lovely François, Directrice Générale de l'ONA",
+  },
+  {
+    src: "/direction-generale.jpg",
+    alt: "Nomination du Directeur Général Adjoint",
+    legende: "M. Job Pierre, Directeur Général Adjoint de l'ONA",
+  },
+];
 
 const ESPACES = [
   {
@@ -57,15 +76,21 @@ const ESPACES = [
 ];
 
 export default async function Accueil() {
-  const dernieres = await prisma.reflexion.findMany({
-    where: { publie: true },
-    orderBy: { createdAt: "desc" },
-    take: 3,
-    include: {
-      auteur: { select: { name: true } },
-      _count: { select: { commentaires: true } },
-    },
-  });
+  const [dernieres, totalReflexions, totalMembres, totalCommentaires] =
+    await Promise.all([
+      prisma.reflexion.findMany({
+        where: { publie: true },
+        orderBy: { createdAt: "desc" },
+        take: 3,
+        include: {
+          auteur: { select: { name: true } },
+          _count: { select: { commentaires: true } },
+        },
+      }),
+      prisma.reflexion.count({ where: { publie: true } }),
+      prisma.user.count({ where: { role: { not: null } } }),
+      prisma.commentaire.count(),
+    ]);
 
   return (
     <div>
@@ -86,7 +111,10 @@ export default async function Accueil() {
 
         <div className="relative mx-auto max-w-5xl px-6 pb-28 pt-24">
           <p className="font-display text-sm uppercase tracking-widest text-white/70">
-            SI-ONA — espace indépendant
+            SI-ONA
+          </p>
+          <p className="mt-2 font-display text-2xl font-semibold text-white sm:text-3xl">
+            Le Système d&apos;Information de l&apos;ONA
           </p>
           <h1 className="mt-4 max-w-2xl font-display text-4xl font-semibold italic leading-tight text-white sm:text-5xl">
             Penser la protection sociale, ensemble.
@@ -122,6 +150,41 @@ export default async function Accueil() {
         >
           <path d="M0,24 C240,60 480,0 720,18 C960,36 1200,60 1440,24 L1440,60 L0,60 Z" />
         </svg>
+      </section>
+
+      {/* CHIFFRES CLES */}
+      <section className="bg-ona-blue-bg">
+        <div className="mx-auto grid max-w-5xl grid-cols-3 divide-x divide-ona-primary/15 px-6 py-10 text-center">
+          <div>
+            <p className="font-display text-3xl font-semibold text-ona-primary sm:text-4xl">
+              {totalReflexions}
+            </p>
+            <p className="mt-1 text-xs uppercase tracking-wide text-ona-text-muted sm:text-sm">
+              Réflexions publiées
+            </p>
+          </div>
+          <div>
+            <p className="font-display text-3xl font-semibold text-ona-primary sm:text-4xl">
+              {totalMembres}
+            </p>
+            <p className="mt-1 text-xs uppercase tracking-wide text-ona-text-muted sm:text-sm">
+              Membres inscrits
+            </p>
+          </div>
+          <div>
+            <p className="font-display text-3xl font-semibold text-ona-primary sm:text-4xl">
+              {totalCommentaires}
+            </p>
+            <p className="mt-1 text-xs uppercase tracking-wide text-ona-text-muted sm:text-sm">
+              Commentaires échangés
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* SLIDESHOW */}
+      <section className="mx-auto max-w-5xl px-6 py-14">
+        <Slideshow diapos={DIAPOS} />
       </section>
 
       {/* ESPACES */}

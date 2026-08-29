@@ -1,5 +1,4 @@
 import Image from "next/image";
-import { Landmark } from "lucide-react";
 
 // Contenu factuel et public sur l'institution ONA elle-meme (decret de
 // creation, mission). Les photos (batiment, direction) sont fournies par
@@ -29,9 +28,13 @@ export default function Institution() {
 
       <section className="mx-auto max-w-3xl px-6 py-14">
         <div className="flex items-start gap-4">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-ona-blue-bg">
-            <Landmark className="h-5 w-5 text-ona-primary" />
-          </div>
+          <Image
+            src="/logo-ona.jpg"
+            alt="Sceau de l'Office National d'Assurance-Vieillesse"
+            width={56}
+            height={56}
+            className="h-14 w-14 shrink-0 rounded-full"
+          />
           <div>
             <h2 className="font-display text-xl font-semibold text-ona-text">
               Créée par le décret du 8 novembre 1965
