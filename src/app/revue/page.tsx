@@ -9,7 +9,10 @@ export default async function Revue() {
     where: { publie: true, type: "REVUE" },
     orderBy: { createdAt: "desc" },
     take: 30,
-    include: { auteur: { select: { name: true } }, _count: { select: { commentaires: true } } },
+    include: {
+      auteur: { select: { name: true } },
+      _count: { select: { commentaires: true } },
+    },
   });
 
   return (
@@ -19,9 +22,11 @@ export default async function Revue() {
           <Newspaper className="h-6 w-6 text-ona-accent" />
         </div>
         <div>
-          <h1 className="font-display text-2xl font-semibold text-ona-text">Revue hebdomadaire</h1>
+          <h1 className="font-display text-2xl font-semibold text-ona-text">
+            Revue hebdomadaire
+          </h1>
           <p className="mt-0.5 text-sm text-ona-text-muted">
-            Une sélection publiée chaque semaine, ouverte à toutes et tous.
+            Publication des producteurs et de leurs idées
           </p>
         </div>
       </div>
@@ -33,7 +38,9 @@ export default async function Revue() {
             href={`/reflexions/${r.id}`}
             className="block rounded-xl border border-ona-border bg-ona-surface p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-ona-accent hover:shadow-md"
           >
-            <p className="font-display text-lg font-semibold text-ona-text">{r.titre}</p>
+            <p className="font-display text-lg font-semibold text-ona-text">
+              {r.titre}
+            </p>
             <p className="mt-1 flex items-center gap-1.5 text-xs text-ona-text-muted">
               {r.auteur.name}
               <span className="text-ona-border">·</span>

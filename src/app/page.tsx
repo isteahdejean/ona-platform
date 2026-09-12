@@ -21,11 +21,13 @@ const DIAPOS = [
     src: "/directrice-generale.jpg",
     alt: "Mme Lovely François",
     legende: "Mme Lovely François, Directrice Générale de l'ONA",
+    position: "center 15%",
   },
   {
     src: "/direction-generale.jpg",
     alt: "Nomination du Directeur Général Adjoint",
     legende: "M. Job Pierre, Directeur Général Adjoint de l'ONA",
+    position: "center 10%",
   },
 ];
 
@@ -136,7 +138,7 @@ export default async function Accueil() {
               href="/revue"
               className="inline-flex items-center gap-2 rounded-full border border-white/30 px-6 py-3 font-medium text-white transition hover:bg-white/10"
             >
-              Lire la revue hebdomadaire
+              Lire la revue
             </Link>
           </div>
         </div>

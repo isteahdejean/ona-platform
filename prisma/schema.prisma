@@ -32,6 +32,8 @@ model User {
   emailVerified DateTime?
   image         String?
   passwordHash  String? // pour la connexion par email/mot de passe (assures/pensionnes sans compte Google)
+  bio           String?
+  poste         String?
   role          Role?
   directionId   String?
   direction     Direction?    @relation(fields: [directionId], references: [id])

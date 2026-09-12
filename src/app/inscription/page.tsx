@@ -3,7 +3,13 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { PenLine, ShieldCheck, HeartHandshake, Megaphone, type LucideIcon } from "lucide-react";
+import {
+  PenLine,
+  ShieldCheck,
+  HeartHandshake,
+  Megaphone,
+  type LucideIcon,
+} from "lucide-react";
 
 const ROLES: {
   valeur: string;
@@ -78,7 +84,9 @@ export default function Inscription() {
       setEnCours(null);
       return;
     }
-    router.push(tableau);
+    const destination =
+      role === "PRODUCTEUR" || role === "SYNDICAT" ? "/profil" : tableau;
+    router.push(destination);
     router.refresh();
   }
 
@@ -88,28 +96,38 @@ export default function Inscription() {
         Quel est votre profil ?
       </h1>
       <p className="mt-2 text-sm text-ona-text-muted">
-        Ce choix détermine l&apos;espace de travail auquel vous accédez. Un administrateur pourra
-        l&apos;ajuster si besoin.
+        Ce choix détermine l&apos;espace de travail auquel vous accédez. Un
+        administrateur pourra l&apos;ajuster si besoin.
       </p>
 
       <div className="mt-8 grid gap-3">
-        {ROLES.map(({ valeur, titre, texte, tableau, Icone, couleur, fond }) => (
-          <button
-            key={valeur}
-            disabled={enCours !== null}
-            onClick={() => choisirRole(valeur, tableau)}
-            className="flex items-start gap-4 rounded-xl border border-ona-border bg-ona-surface p-5 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md hover:border-ona-primary/40 disabled:opacity-60"
-          >
-            <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-lg ${fond}`}>
-              <Icone className={`h-5 w-5 ${couleur}`} />
-            </div>
-            <div>
-              <p className="font-display text-lg font-semibold text-ona-text">{titre}</p>
-              <p className="mt-1 text-sm text-ona-text-muted">{texte}</p>
-              {enCours === valeur && <p className="mt-2 text-xs text-ona-accent">Enregistrement...</p>}
-            </div>
-          </button>
-        ))}
+        {ROLES.map(
+          ({ valeur, titre, texte, tableau, Icone, couleur, fond }) => (
+            <button
+              key={valeur}
+              disabled={enCours !== null}
+              onClick={() => choisirRole(valeur, tableau)}
+              className="flex items-start gap-4 rounded-xl border border-ona-border bg-ona-surface p-5 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md hover:border-ona-primary/40 disabled:opacity-60"
+            >
+              <div
+                className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-lg ${fond}`}
+              >
+                <Icone className={`h-5 w-5 ${couleur}`} />
+              </div>
+              <div>
+                <p className="font-display text-lg font-semibold text-ona-text">
+                  {titre}
+                </p>
+                <p className="mt-1 text-sm text-ona-text-muted">{texte}</p>
+                {enCours === valeur && (
+                  <p className="mt-2 text-xs text-ona-accent">
+                    Enregistrement...
+                  </p>
+                )}
+              </div>
+            </button>
+          ),
+        )}
       </div>
       {erreur && <p className="mt-4 text-sm text-red-600">{erreur}</p>}
     </div>

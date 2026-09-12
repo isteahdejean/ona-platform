@@ -2,10 +2,12 @@
 
 import { useEffect, useState } from "react";
 
-type Diapo = { src: string; alt: string; legende: string };
+type Diapo = { src: string; alt: string; legende: string; position?: string };
 
 // Carrousel simple, auto-defilant (5s), avec puces cliquables. Client
 // component car il gere son propre minuteur (useEffect/useState).
+// "position" permet de cadrer chaque photo individuellement (ex. "top" pour
+// les portraits ou les visages sont dans le tiers superieur de l'image).
 export default function Slideshow({ diapos }: { diapos: Diapo[] }) {
   const [index, setIndex] = useState(0);
 
@@ -18,13 +20,14 @@ export default function Slideshow({ diapos }: { diapos: Diapo[] }) {
 
   return (
     <div className="relative overflow-hidden rounded-2xl border border-ona-border shadow-sm">
-      <div className="relative h-64 sm:h-80">
+      <div className="relative h-80 sm:h-[28rem] md:h-[32rem]">
         {diapos.map((d, i) => (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             key={d.src}
             src={d.src}
             alt={d.alt}
+            style={{ objectPosition: d.position ?? "center" }}
             className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-700 ${
               i === index ? "opacity-100" : "opacity-0"
             }`}

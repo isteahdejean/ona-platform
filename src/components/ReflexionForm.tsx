@@ -6,7 +6,11 @@ import { useRouter } from "next/navigation";
 // afficherChoixType : les producteurs/direction peuvent aussi publier la
 // revue hebdomadaire depuis ce meme formulaire ; les autres espaces
 // (syndicats) ne publient que des reflexions ordinaires.
-export default function ReflexionForm({ afficherChoixType = false }: { afficherChoixType?: boolean }) {
+export default function ReflexionForm({
+  afficherChoixType = false,
+}: {
+  afficherChoixType?: boolean;
+}) {
   const router = useRouter();
   const [titre, setTitre] = useState("");
   const [contenu, setContenu] = useState("");
@@ -35,8 +39,13 @@ export default function ReflexionForm({ afficherChoixType = false }: { afficherC
   }
 
   return (
-    <form onSubmit={publier} className="rounded-lg border border-ona-border bg-ona-surface p-5">
-      <p className="font-display text-lg font-medium text-ona-primary">Publier une réflexion</p>
+    <form
+      onSubmit={publier}
+      className="rounded-lg border border-ona-border bg-ona-surface p-5"
+    >
+      <p className="font-display text-lg font-medium text-ona-primary">
+        Publier une réflexion
+      </p>
 
       {afficherChoixType && (
         <div className="mt-3 flex gap-2 text-sm">
@@ -52,7 +61,7 @@ export default function ReflexionForm({ afficherChoixType = false }: { afficherC
             onClick={() => setType("REVUE")}
             className={`rounded-full border px-3 py-1 ${type === "REVUE" ? "border-ona-accent bg-ona-red-bg text-ona-accent" : "border-ona-border text-ona-text-muted"}`}
           >
-            Revue hebdomadaire
+            Revue
           </button>
         </div>
       )}

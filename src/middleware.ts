@@ -21,7 +21,9 @@ export default withAuth(
       return NextResponse.redirect(new URL("/inscription", req.url));
     }
 
-    const espace = Object.keys(ESPACES_PAR_ROLE).find((prefix) => pathname.startsWith(prefix));
+    const espace = Object.keys(ESPACES_PAR_ROLE).find((prefix) =>
+      pathname.startsWith(prefix),
+    );
     if (espace && role && !ESPACES_PAR_ROLE[espace].includes(role)) {
       return NextResponse.redirect(new URL("/", req.url));
     }
@@ -34,9 +36,9 @@ export default withAuth(
       // la logique de role ci-dessus s'execute ensuite.
       authorized: ({ token }) => !!token,
     },
-  }
+  },
 );
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/inscription"],
+  matcher: ["/dashboard/:path*", "/inscription", "/profil"],
 };

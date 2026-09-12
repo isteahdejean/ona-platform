@@ -57,7 +57,7 @@ export default function Header() {
             href="/revue"
             className="hidden font-medium text-ona-text-muted hover:text-ona-primary sm:inline"
           >
-            Revue hebdomadaire
+            Revue
           </Link>
 
           {status === "authenticated" && role && (
