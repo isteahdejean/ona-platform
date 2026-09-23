@@ -6,10 +6,10 @@ import {
   Building2,
   Megaphone,
   ArrowRight,
-  MessageSquare,
 } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import Slideshow from "@/components/Slideshow";
+import ReflexionCard from "@/components/ReflexionCard";
 
 const DIAPOS = [
   {
@@ -83,9 +83,9 @@ export default async function Accueil() {
       prisma.reflexion.findMany({
         where: { publie: true },
         orderBy: { createdAt: "desc" },
-        take: 3,
+        take: 4,
         include: {
-          auteur: { select: { name: true } },
+          auteur: { select: { name: true, image: true, role: true } },
           _count: { select: { commentaires: true } },
         },
       }),
@@ -96,9 +96,7 @@ export default async function Accueil() {
 
   return (
     <div>
-      {/* HERO */}
       <section className="relative overflow-hidden bg-ona-primary-dark">
-        {/* Motif decoratif : anneaux inspires du badge SI-ONA, pas le sceau officiel */}
         <svg
           className="pointer-events-none absolute -right-24 -top-24 h-[420px] w-[420px] opacity-[0.12] sm:h-[560px] sm:w-[560px]"
           viewBox="0 0 400 400"
@@ -143,7 +141,6 @@ export default async function Accueil() {
           </div>
         </div>
 
-        {/* Transition en vague vers le reste de la page */}
         <svg
           className="absolute bottom-0 left-0 block h-14 w-full text-ona-bg"
           viewBox="0 0 1440 60"
@@ -154,7 +151,6 @@ export default async function Accueil() {
         </svg>
       </section>
 
-      {/* CHIFFRES CLES */}
       <section className="bg-ona-blue-bg">
         <div className="mx-auto grid max-w-5xl grid-cols-3 divide-x divide-ona-primary/15 px-6 py-10 text-center">
           <div>
@@ -184,12 +180,10 @@ export default async function Accueil() {
         </div>
       </section>
 
-      {/* SLIDESHOW */}
       <section className="mx-auto max-w-5xl px-6 py-14">
         <Slideshow diapos={DIAPOS} />
       </section>
 
-      {/* ESPACES */}
       <section className="mx-auto grid max-w-5xl gap-5 px-6 py-16 sm:grid-cols-2">
         {ESPACES.map(({ titre, texte, eyebrow, Icone, couleur, fond }) => (
           <div
@@ -214,7 +208,6 @@ export default async function Accueil() {
         ))}
       </section>
 
-      {/* DEVISE — citation typographique */}
       <section className="border-y border-ona-border bg-ona-surface">
         <div className="mx-auto max-w-3xl px-6 py-16 text-center">
           <div className="mx-auto flex h-1 w-16 overflow-hidden rounded-full">
@@ -222,36 +215,21 @@ export default async function Accueil() {
             <div className="w-1/2 bg-ona-accent" />
           </div>
           <p className="mt-6 font-display text-3xl italic leading-snug text-ona-primary-dark sm:text-4xl">
-            « Assurons les jeunes,
+            « Rassembler les idées, nourrir la réflexion,
             <br />
-            protégeons les vieux. »
+            bâtir des solutions — par la technologie. »{" "}
           </p>
         </div>
       </section>
 
-      {/* DERNIERES REFLEXIONS */}
       {dernieres.length > 0 && (
         <section className="mx-auto max-w-5xl px-6 py-16">
           <h2 className="font-display text-2xl font-semibold text-ona-text">
             Dernières réflexions
           </h2>
-          <div className="mt-6 space-y-3">
-            {dernieres.map((r) => (
-              <Link
-                key={r.id}
-                href={`/reflexions/${r.id}`}
-                className="block rounded-xl border border-ona-border bg-ona-surface p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-ona-primary hover:shadow-md"
-              >
-                <p className="font-display text-lg font-semibold text-ona-text">
-                  {r.titre}
-                </p>
-                <p className="mt-1 flex items-center gap-1.5 text-xs text-ona-text-muted">
-                  {r.auteur.name}
-                  <span className="text-ona-border">·</span>
-                  <MessageSquare className="h-3.5 w-3.5" />
-                  {r._count.commentaires}
-                </p>
-              </Link>
+          <div className="mt-6 space-y-4">
+            {dernieres.map((r, i) => (
+              <ReflexionCard key={r.id} reflexion={r} featured={i === 0} />
             ))}
           </div>
         </section>

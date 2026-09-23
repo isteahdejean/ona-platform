@@ -17,15 +17,17 @@ export default function Footer() {
         <div>
           <p className="font-display text-lg font-medium">SI-ONA</p>
           <p className="mt-2 text-sm text-white/70">
-            Espace collaboratif indépendant des employés, assurés, pensionnés
-            et syndicats de l&apos;ONA.
+            Espace collaboratif indépendant des employés, assurés, pensionnés et
+            syndicats de l&apos;ONA.
             <br />
             Assurons les jeunes, protégeons les vieux.
           </p>
         </div>
 
         <div>
-          <p className="text-xs uppercase tracking-wide text-white/50">Nous contacter</p>
+          <p className="text-xs uppercase tracking-wide text-white/50">
+            Nous contacter
+          </p>
           <ul className="mt-3 space-y-2 text-sm">
             <li>
               <a href={CONTACT.telephoneHref} className="hover:underline">
@@ -38,7 +40,12 @@ export default function Footer() {
               </a>
             </li>
             <li>
-              <a href={CONTACT.siteWeb} target="_blank" rel="noopener noreferrer" className="hover:underline">
+              <a
+                href={CONTACT.siteWeb}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:underline"
+              >
                 Site officiel de l&apos;ONA
               </a>
             </li>
@@ -46,16 +53,27 @@ export default function Footer() {
         </div>
 
         <div>
-          <p className="text-xs uppercase tracking-wide text-white/50">Liens utiles</p>
+          <p className="text-xs uppercase tracking-wide text-white/50">
+            Liens utiles
+          </p>
           <ul className="mt-3 space-y-2 text-sm">
             <li>
-              <Link href="/revue" className="hover:underline">Revue hebdomadaire</Link>
+              <Link href="/revue" className="hover:underline">
+                Revue
+              </Link>
             </li>
             <li>
-              <Link href="/connexion" className="hover:underline">Se connecter</Link>
+              <Link href="/connexion" className="hover:underline">
+                Se connecter
+              </Link>
             </li>
             <li>
-              <Link href="/inscription" className="hover:underline">S&apos;inscrire</Link>
+              <Link
+                href="/connexion?mode=inscription"
+                className="hover:underline"
+              >
+                S&apos;inscrire
+              </Link>
             </li>
           </ul>
         </div>

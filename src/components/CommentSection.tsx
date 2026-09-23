@@ -7,13 +7,20 @@ type Commentaire = {
   contenu: string;
   parentId: string | null;
   createdAt: string;
-  auteur: { id: string; name: string | null; role: string | null };
+  auteur: {
+    id: string;
+    name: string | null;
+    role: string | null;
+    image?: string | null;
+  };
 };
 
 type Noeud = Commentaire & { enfants: Noeud[] };
 
 function construireArbre(liste: Commentaire[]): Noeud[] {
-  const parNoeud = new Map<string, Noeud>(liste.map((c) => [c.id, { ...c, enfants: [] }]));
+  const parNoeud = new Map<string, Noeud>(
+    liste.map((c) => [c.id, { ...c, enfants: [] }]),
+  );
   const racines: Noeud[] = [];
   for (const c of parNoeud.values()) {
     if (c.parentId && parNoeud.has(c.parentId)) {
@@ -25,8 +32,6 @@ function construireArbre(liste: Commentaire[]): Noeud[] {
   return racines;
 }
 
-// Pas de limite sur le nombre de commentaires ou de reponses : le fil se
-// construit entierement a partir de la relation parentId cote base de donnees.
 export default function CommentSection({
   reflexionId,
   commentairesInitiaux,
@@ -53,7 +58,10 @@ export default function CommentSection({
     const nouveau = await reponse.json();
     setCommentaires((prev) => [
       ...prev,
-      { ...nouveau, auteur: { id: nouveau.auteurId, name: "Vous", role: null } },
+      {
+        ...nouveau,
+        auteur: { id: nouveau.auteurId, name: "Vous", role: null, image: null },
+      },
     ]);
     if (parentId) {
       setReponseA(null);
@@ -65,19 +73,47 @@ export default function CommentSection({
 
   function afficherNoeud(noeud: Noeud, profondeur: number) {
     return (
-      <div key={noeud.id} style={{ marginLeft: Math.min(profondeur, 6) * 20 }} className="mt-4">
-        <div className="rounded-md border border-ona-border bg-ona-surface p-3">
-          <p className="text-sm font-medium text-ona-primary">{noeud.auteur.name ?? "Membre"}</p>
-          <p className="mt-1 text-sm text-ona-text">{noeud.contenu}</p>
-          <button
-            onClick={() => setReponseA(reponseA === noeud.id ? null : noeud.id)}
-            className="mt-2 text-xs text-ona-accent hover:underline"
-          >
-            Répondre
-          </button>
+      <div
+        key={noeud.id}
+        className="relative mt-4"
+        style={{ marginLeft: Math.min(profondeur, 6) * 24 }}
+      >
+        {profondeur > 0 && (
+          <span
+            className="absolute -left-4 top-0 h-full w-px bg-ona-border"
+            aria-hidden
+          />
+        )}
+        <div className="flex gap-3">
+          {noeud.auteur.image ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={noeud.auteur.image}
+              alt={noeud.auteur.name ?? "Membre"}
+              className="h-8 w-8 shrink-0 rounded-full object-cover"
+            />
+          ) : (
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-ona-blue-bg text-xs font-medium text-ona-primary">
+              {(noeud.auteur.name ?? "?").charAt(0).toUpperCase()}
+            </span>
+          )}
+          <div className="flex-1 rounded-md border border-ona-border bg-ona-surface p-3">
+            <p className="text-sm font-medium text-ona-primary">
+              {noeud.auteur.name ?? "Membre"}
+            </p>
+            <p className="mt-1 text-sm text-ona-text">{noeud.contenu}</p>
+            <button
+              onClick={() =>
+                setReponseA(reponseA === noeud.id ? null : noeud.id)
+              }
+              className="mt-2 text-xs text-ona-accent hover:underline"
+            >
+              Répondre
+            </button>
+          </div>
         </div>
         {reponseA === noeud.id && (
-          <div className="mt-2 flex gap-2">
+          <div className="mt-2 flex gap-2 pl-11">
             <input
               autoFocus
               value={texteReponse}

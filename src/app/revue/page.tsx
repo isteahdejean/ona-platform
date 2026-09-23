@@ -1,16 +1,14 @@
-import Link from "next/link";
-import { Newspaper, MessageSquare } from "lucide-react";
+import { Newspaper } from "lucide-react";
 import { prisma } from "@/lib/prisma";
+import ReflexionCard from "@/components/ReflexionCard";
 
-// Page publique : pas besoin d'etre connecte pour lire la revue hebdomadaire,
-// seule la publication est reservee aux producteurs/direction.
 export default async function Revue() {
   const entrees = await prisma.reflexion.findMany({
     where: { publie: true, type: "REVUE" },
     orderBy: { createdAt: "desc" },
     take: 30,
     include: {
-      auteur: { select: { name: true } },
+      auteur: { select: { name: true, image: true, role: true } },
       _count: { select: { commentaires: true } },
     },
   });
@@ -23,31 +21,17 @@ export default async function Revue() {
         </div>
         <div>
           <h1 className="font-display text-2xl font-semibold text-ona-text">
-            Revue hebdomadaire
+            Revue
           </h1>
           <p className="mt-0.5 text-sm text-ona-text-muted">
-            Publication des producteurs et de leurs idées
+            Publications de l&apos;institution, ouvertes à toutes et tous.
           </p>
         </div>
       </div>
 
-      <div className="mt-8 space-y-3">
-        {entrees.map((r) => (
-          <Link
-            key={r.id}
-            href={`/reflexions/${r.id}`}
-            className="block rounded-xl border border-ona-border bg-ona-surface p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-ona-accent hover:shadow-md"
-          >
-            <p className="font-display text-lg font-semibold text-ona-text">
-              {r.titre}
-            </p>
-            <p className="mt-1 flex items-center gap-1.5 text-xs text-ona-text-muted">
-              {r.auteur.name}
-              <span className="text-ona-border">·</span>
-              <MessageSquare className="h-3.5 w-3.5" />
-              {r._count.commentaires}
-            </p>
-          </Link>
+      <div className="mt-8 space-y-4">
+        {entrees.map((r, i) => (
+          <ReflexionCard key={r.id} reflexion={r} featured={i === 0} />
         ))}
         {entrees.length === 0 && (
           <p className="text-sm text-ona-text-muted">
