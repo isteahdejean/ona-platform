@@ -55,12 +55,17 @@ export default function CompleterProfil() {
   }
 
   function tableauDeBord() {
-    const role = (session?.user as any)?.role;
-    return role === "SYNDICAT"
-      ? "/dashboard/syndicat"
-      : "/dashboard/producteur";
+    const TABLEAU_PAR_ROLE: Record<string, string> = {
+      PRODUCTEUR: "/dashboard/producteur",
+      ASSURE: "/dashboard/assure",
+      PENSIONNE: "/dashboard/pensionne",
+      SYNDICAT: "/dashboard/syndicat",
+      DIRECTION: "/dashboard/direction",
+      ADMIN: "/dashboard/direction",
+    };
+    const role = (session?.user as any)?.role as string | undefined;
+    return TABLEAU_PAR_ROLE[role ?? ""] ?? "/";
   }
-
   async function enregistrer(e: React.FormEvent) {
     e.preventDefault();
     setEnvoi(true);
