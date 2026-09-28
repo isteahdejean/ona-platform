@@ -25,8 +25,8 @@ export default function Footer() {
         </div>
 
         <div>
-          <p className="text-xs uppercase tracking-wide text-white/50">
-            Nous contacter
+          <p className="text-xs uppercase tracking-wide text-white/75">
+            Contactez-nous
           </p>
           <ul className="mt-3 space-y-2 text-sm">
             <li>
@@ -53,7 +53,7 @@ export default function Footer() {
         </div>
 
         <div>
-          <p className="text-xs uppercase tracking-wide text-white/50">
+          <p className="text-xs uppercase tracking-wide text-white/75">
             Liens utiles
           </p>
           <ul className="mt-3 space-y-2 text-sm">
@@ -78,7 +78,7 @@ export default function Footer() {
           </ul>
         </div>
       </div>
-      <div className="border-t border-white/10 px-6 py-4 text-center text-xs text-white/50">
+      <div className="border-t border-white/10 px-6 py-4 text-center text-xs text-white/75">
         © {new Date().getFullYear()} SI-ONA — Espace collaboratif indépendant
       </div>
     </footer>
