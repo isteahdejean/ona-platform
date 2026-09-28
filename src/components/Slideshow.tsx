@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useState } from "react";
 
 type Diapo = { src: string; alt: string; legende: string; position?: string };
@@ -8,10 +9,21 @@ type Diapo = { src: string; alt: string; legende: string; position?: string };
 // component car il gere son propre minuteur (useEffect/useState).
 // "position" permet de cadrer chaque photo individuellement (ex. "top" pour
 // les portraits ou les visages sont dans le tiers superieur de l'image).
+//
+// OPTIMISATION : next/image sert automatiquement chaque photo en WebP/AVIF,
+// redimensionnee a la taille reelle de l'ecran. La premiere photo est
+// chargee en priorite (c'est l'element LCP mesure par PageSpeed), les
+// suivantes sont chargees ensuite.
 export default function Slideshow({ diapos }: { diapos: Diapo[] }) {
   const [index, setIndex] = useState(0);
 
   useEffect(() => {
+    // Respecte le reglage "reduire les animations" du systeme de l'utilisateur
+    const reduireAnimations = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+    if (reduireAnimations) return;
+
     const minuteur = setInterval(() => {
       setIndex((i) => (i + 1) % diapos.length);
     }, 5000);
@@ -22,13 +34,16 @@ export default function Slideshow({ diapos }: { diapos: Diapo[] }) {
     <div className="relative overflow-hidden rounded-2xl border border-ona-border shadow-sm">
       <div className="relative h-80 sm:h-[28rem] md:h-[32rem]">
         {diapos.map((d, i) => (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
+          <Image
             key={d.src}
             src={d.src}
             alt={d.alt}
+            fill
+            priority={i === 0}
+            quality={85}
+            sizes="(max-width: 768px) 100vw, (max-width: 1280px) 90vw, 1200px"
             style={{ objectPosition: d.position ?? "center" }}
-            className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-700 ${
+            className={`object-cover transition-opacity duration-700 ${
               i === index ? "opacity-100" : "opacity-0"
             }`}
           />
@@ -44,6 +59,7 @@ export default function Slideshow({ diapos }: { diapos: Diapo[] }) {
             key={d.src}
             onClick={() => setIndex(i)}
             aria-label={`Voir la diapositive ${i + 1}`}
+            aria-current={i === index ? "true" : undefined}
             className={`h-1.5 rounded-full transition-all ${
               i === index ? "w-5 bg-white" : "w-1.5 bg-white/50"
             }`}

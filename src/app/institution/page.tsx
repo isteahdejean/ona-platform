@@ -10,7 +10,7 @@ export default function Institution() {
       <section className="relative overflow-hidden bg-ona-primary-dark">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src="/batiment-ona.gif"
+          src="/batiment-ona.jpg"
           alt="Bâtiment de l'Office National d'Assurance-Vieillesse"
           className="h-64 w-full object-cover opacity-40 sm:h-80"
         />

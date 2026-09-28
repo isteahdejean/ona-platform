@@ -13,7 +13,7 @@ import ReflexionCard from "@/components/ReflexionCard";
 
 const DIAPOS = [
   {
-    src: "/batiment-ona.gif",
+    src: "/batiment-ona.jpg",
     alt: "Bâtiment de l'ONA",
     legende: "Siège de l'Office National d'Assurance-Vieillesse",
   },
