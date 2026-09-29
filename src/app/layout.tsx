@@ -5,21 +5,33 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import "./globals.css";
 
-// Newsreader (titres) + Inter (texte courant), chargees et auto-hebergees par
-// Next.js au build. Necessite un acces internet normal (celui de votre PC) :
-// ca ne fonctionnait pas dans le bac a sable de Claude, mais fonctionnera chez vous.
+// Newsreader (titres) + Inter (texte courant), telechargees et auto-hebergees
+// par Next.js. Necessite un acces internet au demarrage du serveur.
+//
+// Newsreader n'a pas de mesures connues de Next.js pour ajuster
+// automatiquement la police de secours : on desactive donc cet ajustement
+// (ce qui supprime l'avertissement "Failed to find font override values")
+// et on definit une police de secours a empattements, proche de Newsreader.
 const newsreader = Newsreader({
   subsets: ["latin"],
   variable: "--font-display",
   weight: ["500", "600", "700"],
   style: ["normal", "italic"],
+  adjustFontFallback: false,
+  fallback: ["Georgia", "Times New Roman", "serif"],
 });
-const inter = Inter({ subsets: ["latin"], variable: "--font-body" });
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-body",
+  fallback: ["system-ui", "Arial", "sans-serif"],
+});
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://ona-platform.vercel.app"),
   title: "SI-ONA — Espace collaboratif indépendant",
-  description: "Espace collaboratif independant des employes, assures, pensionnes et syndicats de l'ONA : reflexions, echanges et revue hebdomadaire.",
-  icons: { icon: "/logo-si-ona.svg" },
+  description:
+    "Espace collaboratif indépendant des employés, assurés, pensionnés et syndicats de l'ONA : réflexions, échanges et revue hebdomadaire.",
+  icons: { icon: "/logo-si-ona.jpg" },
   openGraph: {
     title: "SI-ONA — Espace collaboratif indépendant",
     description: "Assurons les jeunes, protégeons les vieux.",
@@ -27,7 +39,11 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html lang="fr" className={`${newsreader.variable} ${inter.variable}`}>
       <body className="font-body min-h-screen flex flex-col">
