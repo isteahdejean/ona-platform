@@ -5,11 +5,11 @@ import {
   HeartHandshake,
   Building2,
   Megaphone,
-  ArrowRight,
 } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import Slideshow from "@/components/Slideshow";
 import ReflexionCard from "@/components/ReflexionCard";
+import HeroActions from "@/components/HeroActions";
 
 const DIAPOS = [
   {
@@ -124,21 +124,7 @@ export default async function Accueil() {
             pensionnés et syndicats ont leur place, et où chaque direction garde
             une vue d&apos;ensemble.
           </p>
-          <div className="mt-8 flex flex-wrap gap-3">
-            <Link
-              href="/connexion"
-              className="inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 font-medium text-ona-primary-dark transition hover:bg-white/90"
-            >
-              Se connecter
-              <ArrowRight className="h-4 w-4" />
-            </Link>
-            <Link
-              href="/revue"
-              className="inline-flex items-center gap-2 rounded-full border border-white/30 px-6 py-3 font-medium text-white transition hover:bg-white/10"
-            >
-              Lire la revue
-            </Link>
-          </div>
+          <HeroActions />
         </div>
 
         <svg

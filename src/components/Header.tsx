@@ -3,28 +3,18 @@
 import Link from "next/link";
 import Image from "next/image";
 import { signOut, useSession } from "next-auth/react";
+import { LIBELLE_ROLE, TABLEAU_PAR_ROLE } from "@/lib/roles";
 
-const LIBELLE_ROLE: Record<string, string> = {
-  PRODUCTEUR: "Producteur d'idées",
-  ASSURE: "Assuré",
-  PENSIONNE: "Pensionné",
-  SYNDICAT: "Groupe syndical",
-  DIRECTION: "Direction",
-  ADMIN: "Administration",
-};
-
-const TABLEAU_PAR_ROLE: Record<string, string> = {
-  PRODUCTEUR: "/dashboard/producteur",
-  ASSURE: "/dashboard/assure",
-  PENSIONNE: "/dashboard/pensionne",
-  SYNDICAT: "/dashboard/syndicat",
-  DIRECTION: "/dashboard/direction",
-  ADMIN: "/dashboard/direction",
-};
+// Classe commune aux liens de navigation (masques sur mobile)
+const LIEN_NAV =
+  "hidden font-medium text-ona-text-muted hover:text-ona-primary sm:inline";
 
 export default function Header() {
   const { data: session, status } = useSession();
   const role = (session?.user as any)?.role as string | null | undefined;
+  const connecte = status === "authenticated";
+  const prenom = session?.user?.name?.split(" ")[0];
+  const libelleRole = role ? LIBELLE_ROLE[role] : undefined;
 
   return (
     <header className="sticky top-0 z-10 border-b border-ona-border bg-ona-surface/95 backdrop-blur">
@@ -52,60 +42,65 @@ export default function Header() {
           </div>
         </Link>
 
-        <nav className="flex items-center gap-3 text-sm sm:gap-4">
-          <Link
-            href="/institution"
-            className="hidden font-medium text-ona-text-muted hover:text-ona-primary sm:inline"
+        <div className="flex items-center gap-3 text-sm sm:gap-4">
+          {/* Navigation du site */}
+          <nav
+            aria-label="Navigation principale"
+            className="flex items-center gap-4"
           >
-            L&apos;institution
-          </Link>
-          <Link
-            href="/revue"
-            className="hidden font-medium text-ona-text-muted hover:text-ona-primary sm:inline"
-          >
-            Revue
-          </Link>
+            <Link href="/institution" className={LIEN_NAV}>
+              L&apos;institution
+            </Link>
+            <Link href="/revue" className={LIEN_NAV}>
+              Revue
+            </Link>
+            {connecte && role && (
+              <Link href={TABLEAU_PAR_ROLE[role] ?? "/"} className={LIEN_NAV}>
+                Mon espace
+              </Link>
+            )}
+          </nav>
 
-          {status === "authenticated" && (
-            <Link
-              href="/profil"
-              className="flex items-center gap-1.5 hover:opacity-80"
-              title="Mon profil"
-            >
-              {session?.user?.image ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={session.user.image}
-                  alt={session.user.name ?? "Profil"}
-                  className="h-7 w-7 rounded-full object-cover"
-                />
-              ) : (
-                <span className="flex h-7 w-7 items-center justify-center rounded-full bg-ona-blue-bg text-xs font-medium text-ona-primary">
-                  {(session?.user?.name ?? "?").charAt(0).toUpperCase()}
+          {/* Bloc utilisateur, separe de la navigation */}
+          {connecte ? (
+            <div className="flex items-center gap-3 sm:border-l sm:border-ona-border sm:pl-4">
+              <Link
+                href="/profil"
+                className="flex items-center gap-2 rounded-full hover:opacity-80"
+                title="Mon profil"
+              >
+                {session?.user?.image ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={session.user.image}
+                    alt={session.user.name ?? "Profil"}
+                    className="h-8 w-8 rounded-full object-cover"
+                  />
+                ) : (
+                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-ona-blue-bg text-xs font-medium text-ona-primary">
+                    {(session?.user?.name ?? "?").charAt(0).toUpperCase()}
+                  </span>
+                )}
+                <span className="hidden leading-tight sm:block">
+                  <span className="block text-sm font-medium text-ona-text">
+                    {prenom}
+                  </span>
+                  {libelleRole && (
+                    <span className="block text-xs text-ona-text-muted">
+                      {libelleRole}
+                    </span>
+                  )}
                 </span>
-              )}
-              <span className="hidden text-sm font-medium text-ona-text sm:inline">
-                {session?.user?.name?.split(" ")[0]}
-              </span>
-            </Link>
-          )}
+              </Link>
 
-          {status === "authenticated" && role && (
-            <Link
-              href={TABLEAU_PAR_ROLE[role] ?? "/"}
-              className="hidden font-medium text-ona-text-muted hover:text-ona-primary sm:inline"
-            >
-              {LIBELLE_ROLE[role]}
-            </Link>
-          )}
-
-          {status === "authenticated" ? (
-            <button
-              onClick={() => signOut({ callbackUrl: "/" })}
-              className="rounded-full border border-ona-border px-3 py-1.5 text-xs text-ona-text transition hover:border-ona-accent hover:text-ona-accent sm:px-4 sm:text-sm"
-            >
-              Se déconnecter
-            </button>
+              <button
+                type="button"
+                onClick={() => signOut({ callbackUrl: "/" })}
+                className="rounded-full border border-ona-border px-3 py-1.5 text-xs text-ona-text transition hover:border-ona-accent hover:text-ona-accent sm:px-4 sm:text-sm"
+              >
+                Se déconnecter
+              </button>
+            </div>
           ) : (
             status !== "loading" && (
               <Link
@@ -116,7 +111,7 @@ export default function Header() {
               </Link>
             )
           )}
-        </nav>
+        </div>
       </div>
     </header>
   );
