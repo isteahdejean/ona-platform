@@ -35,7 +35,6 @@ export const metadata: Metadata = {
   openGraph: {
     title: "SI-ONA — Espace collaboratif indépendant",
     description: "Assurons les jeunes, protégeons les vieux.",
-    images: ["/ona-banner.jpg"],
   },
 };
 
