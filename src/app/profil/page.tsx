@@ -151,11 +151,14 @@ export default function CompleterProfil() {
         </div>
 
         <div>
-          <label className="text-sm font-medium text-ona-text">Direction</label>
+          <label className="text-sm font-medium text-ona-text">
+            {" "}
+            Direction / Service
+          </label>
           <input
             value={direction}
             onChange={(e) => setDirection(e.target.value)}
-            placeholder="Ex. Direction des Prestations"
+            placeholder="Votre direction ou votre service"
             className="mt-1 w-full rounded-md border border-ona-border px-3 py-2 text-sm"
           />
         </div>
