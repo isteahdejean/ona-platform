@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { signOut, useSession } from "next-auth/react";
@@ -11,10 +12,12 @@ const LIEN_NAV =
 
 export default function Header() {
   const { data: session, status } = useSession();
+  const [photoIndisponible, setPhotoIndisponible] = useState(false);
   const role = (session?.user as any)?.role as string | null | undefined;
   const connecte = status === "authenticated";
   const prenom = session?.user?.name?.split(" ")[0];
   const libelleRole = role ? LIBELLE_ROLE[role] : undefined;
+  const photo = session?.user?.image;
 
   return (
     <header className="sticky top-0 z-10 border-b border-ona-border bg-ona-surface/95 backdrop-blur">
@@ -69,11 +72,12 @@ export default function Header() {
                 className="flex items-center gap-2 rounded-full hover:opacity-80"
                 title="Mon profil"
               >
-                {session?.user?.image ? (
+                {photo && !photoIndisponible ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
-                    src={session.user.image}
-                    alt={session.user.name ?? "Profil"}
+                    src={photo}
+                    alt={session?.user?.name ?? "Profil"}
+                    onError={() => setPhotoIndisponible(true)}
                     className="h-8 w-8 rounded-full object-cover"
                   />
                 ) : (

@@ -33,9 +33,19 @@ export const authOptions: NextAuthOptions = {
           where: { email: credentials.email },
         });
         if (!user?.passwordHash) return null;
-        const valid = await bcrypt.compare(credentials.password, user.passwordHash);
+        const valid = await bcrypt.compare(
+          credentials.password,
+          user.passwordHash,
+        );
         if (!valid) return null;
-        return user;
+        // On ne renvoie que le strict necessaire (jamais le mot de passe
+        // chiffre, ni la photo qui peut etre volumineuse).
+        return {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+        } as any;
       },
     }),
   ],
@@ -47,15 +57,24 @@ export const authOptions: NextAuthOptions = {
         token.role = (user as any).role ?? null;
         token.id = user.id;
       } else if (token.id) {
-        const dbUser = await prisma.user.findUnique({ where: { id: token.id as string } });
+        // On ne lit que le role : inutile de charger tout l'utilisateur
+        // (et sa photo) a chaque requete.
+        const dbUser = await prisma.user.findUnique({
+          where: { id: token.id as string },
+          select: { role: true },
+        });
         token.role = dbUser?.role ?? null;
       }
+      // La photo ne doit jamais etre stockee dans le cookie de session :
+      // elle est servie par /api/user/photo.
+      delete token.picture;
       return token;
     },
     async session({ session, token }) {
       if (session.user) {
         (session.user as any).id = token.id;
         (session.user as any).role = token.role;
+        session.user.image = token.id ? `/api/user/photo?id=${token.id}` : null;
       }
       return session;
     },

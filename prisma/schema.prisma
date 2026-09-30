@@ -26,9 +26,9 @@ enum TypeContenu {
 }
 
 model User {
-  id            String    @id @default(cuid())
+  id            String        @id @default(cuid())
   name          String?
-  email         String?   @unique
+  email         String?       @unique
   emailVerified DateTime?
   image         String?
   passwordHash  String? // pour la connexion par email/mot de passe (assures/pensionnes sans compte Google)
@@ -37,6 +37,10 @@ model User {
   role          Role?
   directionId   String?
   direction     Direction?    @relation(fields: [directionId], references: [id])
+  // Bureau ou annexe ou travaille l'employe (optionnel : les assures et
+  // pensionnes n'en ont pas)
+  annexeId      String?
+  annexe        Annexe?       @relation(fields: [annexeId], references: [id])
   accounts      Account[]
   sessions      Session[]
   reflexions    Reflexion[]
@@ -44,11 +48,21 @@ model User {
   createdAt     DateTime      @default(now())
 
   @@index([role])
+  @@index([annexeId])
 }
 
 // Directions internes de l'institution (ex: Direction des prestations,
 // Direction financiere, etc.) — a peupler selon l'organigramme reel.
 model Direction {
+  id    String @id @default(cuid())
+  nom   String @unique
+  users User[]
+}
+
+// Bureaux et annexes de l'ONA (siege, bureaux de la zone metropolitaine
+// et annexes communales). Liste officielle, remplie par
+// prisma/seed-annexes.mjs.
+model Annexe {
   id    String @id @default(cuid())
   nom   String @unique
   users User[]

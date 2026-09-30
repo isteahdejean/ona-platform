@@ -1,19 +1,27 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { Camera } from "lucide-react";
+import { TABLEAU_PAR_ROLE } from "@/lib/roles";
 
-// Redimensionne et compresse l'image choisie (max 480x480, JPEG) avant
-// envoi, pour eviter d'envoyer des photos de plusieurs Mo telles quelles.
+type Annexe = { id: string; nom: string };
+
+// Formats de photo acceptes et taille maximale du fichier d'origine
+const FORMATS_PHOTO = ["image/jpeg", "image/png", "image/webp"];
+const TAILLE_MAX_FICHIER = 10 * 1024 * 1024; // 10 Mo
+
+// Redimensionne et compresse l'image choisie (max 320x320, JPEG) avant
+// envoi. Une photo de profil s'affiche en petit : 320 px suffisent et
+// gardent le fichier leger.
 function redimensionner(fichier: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const lecteur = new FileReader();
     lecteur.onload = () => {
       const image = new Image();
       image.onload = () => {
-        const taille = 480;
+        const taille = 320;
         const ratio = Math.min(taille / image.width, taille / image.height, 1);
         const canvas = document.createElement("canvas");
         canvas.width = image.width * ratio;
@@ -31,68 +39,134 @@ function redimensionner(fichier: File): Promise<string> {
   });
 }
 
+const CHAMP =
+  "mt-1 w-full rounded-md border border-ona-border px-3 py-2 text-sm";
+const ETIQUETTE = "text-sm font-medium text-ona-text";
+
 export default function CompleterProfil() {
   const { data: session } = useSession();
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const [chargement, setChargement] = useState(true);
+  const [dejaRempli, setDejaRempli] = useState(false);
   const [photo, setPhoto] = useState<string | null>(null);
+  const [photoModifiee, setPhotoModifiee] = useState(false);
   const [bio, setBio] = useState("");
   const [poste, setPoste] = useState("");
   const [direction, setDirection] = useState("");
+  const [annexeId, setAnnexeId] = useState("");
+  const [annexes, setAnnexes] = useState<Annexe[]>([]);
   const [envoi, setEnvoi] = useState(false);
   const [erreur, setErreur] = useState<string | null>(null);
 
+  // Charge le profil actuel et la liste des annexes a l'ouverture
+  useEffect(() => {
+    let actif = true;
+    async function charger() {
+      try {
+        const reponse = await fetch("/api/user/profil");
+        if (!reponse.ok) throw new Error();
+        const donnees = await reponse.json();
+        if (!actif) return;
+        const p = donnees.profil;
+        setPhoto(p.image ?? null);
+        setPoste(p.poste);
+        setBio(p.bio);
+        setDirection(p.direction);
+        setAnnexeId(p.annexeId ?? "");
+        setAnnexes(donnees.annexes);
+        setDejaRempli(Boolean(p.poste || p.bio || p.direction || p.annexeId));
+      } catch {
+        if (actif) {
+          setErreur("Impossible de charger votre profil. Rechargez la page.");
+        }
+      } finally {
+        if (actif) setChargement(false);
+      }
+    }
+    charger();
+    return () => {
+      actif = false;
+    };
+  }, []);
+
   async function choisirPhoto(e: React.ChangeEvent<HTMLInputElement>) {
     const fichier = e.target.files?.[0];
+    e.target.value = ""; // permet de rechoisir le meme fichier apres une erreur
     if (!fichier) return;
-    if (!fichier.type.startsWith("image/")) {
-      setErreur("Merci de choisir une image.");
+    if (!FORMATS_PHOTO.includes(fichier.type)) {
+      setErreur("Formats acceptés : JPG, PNG ou WebP.");
+      return;
+    }
+    if (fichier.size > TAILLE_MAX_FICHIER) {
+      setErreur("Cette photo est trop lourde (10 Mo maximum).");
+      return;
+    }
+    if (fichier.size > TAILLE_MAX_FICHIER) {
+      setErreur("Cette photo est trop lourde (10 Mo maximum).");
       return;
     }
     setErreur(null);
-    const dataUrl = await redimensionner(fichier);
-    setPhoto(dataUrl);
+    try {
+      const dataUrl = await redimensionner(fichier);
+      setPhoto(dataUrl);
+      setPhotoModifiee(true);
+    } catch {
+      setErreur("Impossible de lire cette image. Essayez une autre photo.");
+    }
   }
 
   function tableauDeBord() {
-    const TABLEAU_PAR_ROLE: Record<string, string> = {
-      PRODUCTEUR: "/dashboard/producteur",
-      ASSURE: "/dashboard/assure",
-      PENSIONNE: "/dashboard/pensionne",
-      SYNDICAT: "/dashboard/syndicat",
-      DIRECTION: "/dashboard/direction",
-      ADMIN: "/dashboard/direction",
-    };
     const role = (session?.user as any)?.role as string | undefined;
     return TABLEAU_PAR_ROLE[role ?? ""] ?? "/";
   }
+
   async function enregistrer(e: React.FormEvent) {
     e.preventDefault();
     setEnvoi(true);
     setErreur(null);
-    const reponse = await fetch("/api/user/profil", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        bio,
-        poste,
-        direction,
-        photo: photo ?? undefined,
-      }),
-    });
-    setEnvoi(false);
-    if (!reponse.ok) {
-      setErreur("Impossible d'enregistrer le profil, réessayez.");
-      return;
+    try {
+      const reponse = await fetch("/api/user/profil", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          bio,
+          poste,
+          direction,
+          annexeId: annexeId || null,
+          // La photo n'est envoyee que si elle a ete changee
+          photo: photoModifiee && photo ? photo : undefined,
+        }),
+      });
+      if (!reponse.ok) {
+        const donnees = await reponse.json().catch(() => null);
+        setErreur(
+          donnees?.erreur ?? "Impossible d'enregistrer le profil, réessayez.",
+        );
+        return;
+      }
+      router.push(tableauDeBord());
+      router.refresh();
+    } catch {
+      setErreur("Connexion impossible. Vérifiez votre accès Internet.");
+    } finally {
+      setEnvoi(false);
     }
-    router.push(tableauDeBord());
-    router.refresh();
+  }
+
+  if (chargement) {
+    return (
+      <div className="mx-auto max-w-xl px-6 py-16">
+        <p className="text-sm text-ona-text-muted">Chargement du profil...</p>
+      </div>
+    );
   }
 
   return (
     <div className="mx-auto max-w-xl px-6 py-16">
       <h1 className="font-display text-2xl font-semibold text-ona-primary">
-        Complétez votre profil
+        {dejaRempli ? "Modifier mon profil" : "Complétez votre profil"}
       </h1>
       <p className="mt-2 text-sm text-ona-text-muted">
         Votre photo et votre présentation apparaîtront à côté de vos
@@ -104,13 +178,14 @@ export default function CompleterProfil() {
           <button
             type="button"
             onClick={() => inputRef.current?.click()}
+            aria-label="Choisir une photo de profil"
             className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-full border border-ona-border bg-ona-blue-bg"
           >
             {photo ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={photo}
-                alt="Aperçu"
+                alt="Aperçu de la photo de profil"
                 className="h-full w-full object-cover"
               />
             ) : (
@@ -126,57 +201,89 @@ export default function CompleterProfil() {
               {photo ? "Changer la photo" : "Ajouter une photo"}
             </button>
             <p className="text-xs text-ona-text-muted">
-              JPG ou PNG, redimensionnée automatiquement.
+              JPG, PNG ou WebP, 10 Mo maximum. Redimensionnée automatiquement.
             </p>
           </div>
           <input
             ref={inputRef}
             type="file"
-            accept="image/*"
+            accept="image/jpeg,image/png,image/webp"
             onChange={choisirPhoto}
             className="hidden"
           />
         </div>
 
         <div>
-          <label className="text-sm font-medium text-ona-text">
+          <label htmlFor="poste" className={ETIQUETTE}>
             Poste / fonction
           </label>
           <input
+            id="poste"
             value={poste}
             onChange={(e) => setPoste(e.target.value)}
             placeholder="Ex. Agent de recouvrement"
-            className="mt-1 w-full rounded-md border border-ona-border px-3 py-2 text-sm"
+            maxLength={120}
+            className={CHAMP}
           />
         </div>
 
         <div>
-          <label className="text-sm font-medium text-ona-text">
-            {" "}
+          <label htmlFor="direction" className={ETIQUETTE}>
             Direction / Service
           </label>
           <input
+            id="direction"
             value={direction}
             onChange={(e) => setDirection(e.target.value)}
             placeholder="Votre direction ou votre service"
-            className="mt-1 w-full rounded-md border border-ona-border px-3 py-2 text-sm"
+            maxLength={150}
+            className={CHAMP}
           />
         </div>
 
         <div>
-          <label className="text-sm font-medium text-ona-text">
+          <label htmlFor="annexe" className={ETIQUETTE}>
+            Annexe / Bureau
+          </label>
+          <select
+            id="annexe"
+            value={annexeId}
+            onChange={(e) => setAnnexeId(e.target.value)}
+            aria-describedby="annexe-aide"
+            className={`${CHAMP} bg-white`}
+          >
+            <option value="">Aucune / Non concerné</option>
+            {annexes.map((a) => (
+              <option key={a.id} value={a.id}>
+                {a.nom}
+              </option>
+            ))}
+          </select>
+          <p id="annexe-aide" className="mt-1 text-xs text-ona-text-muted">
+            Le bureau ou l&apos;annexe où vous travaillez.
+          </p>
+        </div>
+
+        <div>
+          <label htmlFor="bio" className={ETIQUETTE}>
             Biographie
           </label>
           <textarea
+            id="bio"
             value={bio}
             onChange={(e) => setBio(e.target.value)}
             rows={4}
+            maxLength={1000}
             placeholder="Quelques lignes de présentation..."
-            className="mt-1 w-full rounded-md border border-ona-border px-3 py-2 text-sm"
+            className={CHAMP}
           />
         </div>
 
-        {erreur && <p className="text-sm text-red-600">{erreur}</p>}
+        {erreur && (
+          <p role="alert" className="text-sm text-red-600">
+            {erreur}
+          </p>
+        )}
 
         <div className="flex gap-3">
           <button
@@ -191,7 +298,7 @@ export default function CompleterProfil() {
             onClick={() => router.push(tableauDeBord())}
             className="rounded-md px-5 py-2.5 text-sm font-medium text-ona-text-muted hover:text-ona-text"
           >
-            Passer cette étape
+            {dejaRempli ? "Annuler" : "Passer cette étape"}
           </button>
         </div>
       </form>
