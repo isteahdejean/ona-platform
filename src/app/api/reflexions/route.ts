@@ -29,7 +29,7 @@ export async function GET(req: Request) {
     ...(cursor ? { skip: 1, cursor: { id: cursor } } : {}),
     include: {
       auteur: { select: { id: true, name: true, role: true } },
-      _count: { select: { commentaires: true } },
+      _count: { select: { commentaires: { where: { supprime: false } } } },
     },
   });
 

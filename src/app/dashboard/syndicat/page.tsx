@@ -14,7 +14,7 @@ export default async function TableauSyndicat() {
     take: 20,
     include: {
       auteur: { select: { id: true, name: true, role: true } },
-      _count: { select: { commentaires: true } },
+      _count: { select: { commentaires: { where: { supprime: false } } } },
     },
   });
 

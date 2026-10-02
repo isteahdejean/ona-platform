@@ -87,6 +87,11 @@ model Reflexion {
 
 // parentId permet des fils de discussion (reponses a un commentaire) ;
 // le nombre de commentaires par reflexion n'est pas limite par le schema.
+// parentId permet des fils de discussion (reponses a un commentaire) ;
+// le nombre de commentaires par reflexion n'est pas limite par le schema.
+// Un commentaire supprime par son auteur n'est pas efface : il est masque
+// pour tous les utilisateurs, mais reste consultable par l'administration
+// (moderation), comme l'indique la charte.
 model Commentaire {
   id          String        @id @default(cuid())
   contenu     String
@@ -97,12 +102,13 @@ model Commentaire {
   parentId    String?
   parent      Commentaire?  @relation("Reponses", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   reponses    Commentaire[] @relation("Reponses")
+  supprime    Boolean       @default(false)
+  supprimeLe  DateTime?
   createdAt   DateTime      @default(now())
 
-  @@index([reflexionId])
+  @@index([reflexionId, supprime])
   @@index([parentId])
 }
-
 // --- Modeles requis par NextAuth (adapter Prisma) ---
 
 model Account {

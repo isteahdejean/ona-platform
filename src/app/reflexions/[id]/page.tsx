@@ -1,11 +1,14 @@
 import { notFound } from "next/navigation";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import Avatar from "@/components/Avatar";
 import CommentSection from "@/components/CommentSection";
+import ActionsReflexion from "@/components/ActionsReflexion";
 
-const STYLE_ROLE: Record<
-  string,
-  { texte: string; fond: string; libelle: string }
-> = {
+type StyleRole = { texte: string; fond: string; libelle: string };
+
+const STYLE_ROLE: Record<string, StyleRole> = {
   PRODUCTEUR: {
     texte: "text-ona-primary",
     fond: "bg-ona-blue-bg",
@@ -39,22 +42,33 @@ export default async function PageReflexion({
 }: {
   params: { id: string };
 }) {
+  const session = await getServerSession(authOptions);
+  const utilisateurId = session?.user?.id ?? null;
+  const estAdmin = session?.user?.role === "ADMIN";
+
   const reflexion = await prisma.reflexion.findUnique({
     where: { id: params.id },
     include: {
       auteur: {
-        select: { name: true, role: true, image: true, poste: true, bio: true },
+        select: { id: true, name: true, role: true, poste: true, bio: true },
       },
       commentaires: {
+        // Les commentaires supprimes ne sont charges que pour l'ADMIN
+        where: estAdmin ? {} : { supprime: false },
         orderBy: { createdAt: "asc" },
         include: {
-          auteur: { select: { id: true, name: true, role: true, image: true } },
+          auteur: { select: { id: true, name: true, role: true } },
         },
       },
     },
   });
 
   if (!reflexion) notFound();
+
+  const estAuteur = reflexion.auteurId === utilisateurId;
+
+  // Une reflexion non publiee n'est visible que par son auteur et l'ADMIN
+  if (!reflexion.publie && !estAuteur && !estAdmin) notFound();
 
   const style =
     STYLE_ROLE[reflexion.auteur.role ?? ""] ?? STYLE_ROLE.PRODUCTEUR;
@@ -71,18 +85,11 @@ export default async function PageReflexion({
       </h1>
 
       <div className="mt-5 flex items-center gap-3 border-b border-ona-border pb-6">
-        {reflexion.auteur.image ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={reflexion.auteur.image}
-            alt={reflexion.auteur.name ?? "Auteur"}
-            className="h-14 w-14 rounded-full object-cover"
-          />
-        ) : (
-          <span className="flex h-14 w-14 items-center justify-center rounded-full bg-ona-blue-bg text-lg font-medium text-ona-primary">
-            {(reflexion.auteur.name ?? "?").charAt(0).toUpperCase()}
-          </span>
-        )}
+        <Avatar
+          id={reflexion.auteur.id}
+          nom={reflexion.auteur.name}
+          taille={56}
+        />
         <div>
           <p className="font-medium text-ona-text">{reflexion.auteur.name}</p>
           {reflexion.auteur.poste && (
@@ -92,6 +99,14 @@ export default async function PageReflexion({
           )}
         </div>
       </div>
+
+      <ActionsReflexion
+        reflexionId={reflexion.id}
+        titreInitial={reflexion.titre}
+        contenuInitial={reflexion.contenu}
+        peutModifier={estAuteur}
+        peutSupprimer={estAuteur || estAdmin}
+      />
 
       <div className="mt-8 whitespace-pre-wrap text-lg leading-relaxed text-ona-text first-letter:float-left first-letter:mr-2 first-letter:mt-1 first-letter:font-display first-letter:text-6xl first-letter:font-semibold first-letter:leading-none first-letter:text-ona-primary">
         {reflexion.contenu}
@@ -110,9 +125,16 @@ export default async function PageReflexion({
 
       <CommentSection
         reflexionId={reflexion.id}
+        utilisateurId={utilisateurId}
+        estAdmin={estAdmin}
         commentairesInitiaux={reflexion.commentaires.map((c) => ({
-          ...c,
+          id: c.id,
+          contenu: c.contenu,
+          parentId: c.parentId,
           createdAt: c.createdAt.toISOString(),
+          supprime: c.supprime,
+          supprimeLe: c.supprimeLe ? c.supprimeLe.toISOString() : null,
+          auteur: c.auteur,
         }))}
       />
     </article>
