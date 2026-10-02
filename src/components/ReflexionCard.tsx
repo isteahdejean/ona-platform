@@ -48,7 +48,12 @@ type ReflexionListe = {
   id: string;
   titre: string;
   contenu: string;
-  auteur: { name: string | null; image?: string | null; role?: string | null };
+  auteur: {
+    id?: string;
+    name: string | null;
+    image?: string | null;
+    role?: string | null;
+  };
   _count: { commentaires: number };
 };
 

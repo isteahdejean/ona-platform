@@ -13,7 +13,7 @@ export default async function TableauSyndicat() {
     orderBy: { createdAt: "desc" },
     take: 20,
     include: {
-      auteur: { select: { name: true, image: true, role: true } },
+      auteur: { select: { id: true, name: true, role: true } },
       _count: { select: { commentaires: true } },
     },
   });

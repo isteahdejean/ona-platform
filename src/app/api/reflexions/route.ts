@@ -35,7 +35,8 @@ export async function GET(req: Request) {
 
   return NextResponse.json({
     reflexions,
-    nextCursor: reflexions.length === take ? reflexions[reflexions.length - 1].id : null,
+    nextCursor:
+      reflexions.length === take ? reflexions[reflexions.length - 1].id : null,
   });
 }
 
@@ -44,7 +45,18 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions);
   const role = session?.user?.role;
-  if (!session?.user || !role || !["PRODUCTEUR", "SYNDICAT", "DIRECTION", "ADMIN"].includes(role)) {
+  console.log(
+    "[DIAGNOSTIC publication] utilisateur :",
+    session?.user?.email ?? "AUCUNE SESSION",
+    "| role :",
+    role ?? "AUCUN",
+  );
+
+  if (
+    !session?.user ||
+    !role ||
+    !["PRODUCTEUR", "SYNDICAT", "DIRECTION", "ADMIN"].includes(role)
+  ) {
     return NextResponse.json({ erreur: "Non autorise." }, { status: 403 });
   }
 
