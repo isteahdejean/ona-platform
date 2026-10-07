@@ -20,9 +20,12 @@ enum Role {
 
 // Distingue une reflexion ordinaire de la revue hebdomadaire (contenu edite
 // et publie manuellement chaque semaine, affiche dans une section a part).
+// Distingue une reflexion ordinaire, la revue hebdomadaire (contenu edite
+// et publie chaque semaine) et les travaux de memoire (archive academique).
 enum TypeContenu {
   REFLEXION
   REVUE
+  MEMOIRE
 }
 
 model User {
@@ -77,15 +80,21 @@ model Reflexion {
   auteurId     String
   auteur       User          @relation(fields: [auteurId], references: [id])
   commentaires Commentaire[]
-    documents    Document[]
+  documents    Document[]
+  // Champs propres aux memoires (type MEMOIRE) ; vides pour les autres types.
+  // Pour un memoire, "contenu" sert de resume.
+  etablissement   String?
+  anneeSoutenance Int?
+  domaine         String?
+  attesteLe       DateTime? // date a laquelle l'auteur a coche l'attestation
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
 
   @@index([auteurId])
   @@index([publie, createdAt])
   @@index([type, publie, createdAt])
+  @@index([type, domaine])
 }
-
 // Documents joints a une publication (PDF ou Word). Le fichier lui-meme
 // est stocke dans Supabase Storage (bucket prive "documents") ; la base
 // ne garde que ses informations et son emplacement.

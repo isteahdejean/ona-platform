@@ -57,6 +57,11 @@ export default function Header() {
             <Link href="/revue" className={LIEN_NAV}>
               Revue
             </Link>
+
+            <Link href="/memoires" className={LIEN_NAV}>
+              Mémoires
+            </Link>
+
             {connecte && role && (
               <Link href={TABLEAU_PAR_ROLE[role] ?? "/"} className={LIEN_NAV}>
                 Mon espace

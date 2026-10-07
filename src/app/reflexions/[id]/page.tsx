@@ -96,6 +96,18 @@ export default async function PageReflexion({
       <h1 className="mt-3 font-display text-3xl font-semibold leading-tight text-ona-primary sm:text-4xl">
         {reflexion.titre}
       </h1>
+      {reflexion.type === "MEMOIRE" && (
+        <p className="mt-3 text-sm font-medium text-ona-text-muted">
+          Mémoire ·{" "}
+          {[
+            reflexion.domaine,
+            reflexion.etablissement,
+            reflexion.anneeSoutenance,
+          ]
+            .filter(Boolean)
+            .join(" · ")}
+        </p>
+      )}
 
       <div className="mt-5 flex items-center gap-3 border-b border-ona-border pb-6">
         <Avatar
@@ -120,6 +132,11 @@ export default async function PageReflexion({
         peutModifier={estAuteur}
         peutSupprimer={estAuteur || estAdmin}
       />
+      {reflexion.type === "MEMOIRE" && (
+        <h2 className="mt-8 font-display text-xl font-semibold text-ona-primary">
+          Résumé
+        </h2>
+      )}
 
       <div className="mt-8 whitespace-pre-wrap text-lg leading-relaxed text-ona-text first-letter:float-left first-letter:mr-2 first-letter:mt-1 first-letter:font-display first-letter:text-6xl first-letter:font-semibold first-letter:leading-none first-letter:text-ona-primary">
         {reflexion.contenu}

@@ -9,9 +9,6 @@ import {
   TAILLE_MAX_DOCUMENT,
 } from "@/lib/supabase";
 
-// Roles autorises a publier (les memes que pour les reflexions)
-const ROLES_PUBLICATION = ["PRODUCTEUR", "SYNDICAT", "DIRECTION", "ADMIN"];
-
 const EXTENSIONS: Record<string, string> = {
   "application/pdf": "pdf",
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
@@ -24,13 +21,14 @@ const demandeSchema = z.object({
 });
 
 // POST : donne au navigateur une autorisation temporaire pour envoyer un
-// document directement dans Supabase Storage. Le nom du fichier stocke est
-// genere par le serveur (jamais celui choisi par l'utilisateur) et place
-// dans un dossier propre a l'auteur.
+// document directement dans Supabase Storage. Tout utilisateur ayant un role
+// peut envoyer un document (tout le monde peut publier un memoire) ; les
+// droits de publication propres a chaque type sont verifies ensuite.
+// Le nom du fichier stocke est genere par le serveur et place dans un
+// dossier propre a l'auteur.
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions);
-  const role = session?.user?.role;
-  if (!session?.user || !role || !ROLES_PUBLICATION.includes(role)) {
+  if (!session?.user || !session.user.role) {
     return NextResponse.json({ erreur: "Non autorise." }, { status: 403 });
   }
 
