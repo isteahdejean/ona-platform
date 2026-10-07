@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { getServerSession } from "next-auth";
+import { FileText } from "lucide-react";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import Avatar from "@/components/Avatar";
@@ -37,6 +38,14 @@ const STYLE_ROLE: Record<string, StyleRole> = {
   },
 };
 
+// "1,4 Mo" ou "380 Ko"
+function formaterTaille(octets: number) {
+  if (octets >= 1024 * 1024) {
+    return `${(octets / (1024 * 1024)).toFixed(1).replace(".", ",")} Mo`;
+  }
+  return `${Math.max(1, Math.round(octets / 1024))} Ko`;
+}
+
 export default async function PageReflexion({
   params,
 }: {
@@ -51,6 +60,10 @@ export default async function PageReflexion({
     include: {
       auteur: {
         select: { id: true, name: true, role: true, poste: true, bio: true },
+      },
+      documents: {
+        orderBy: { createdAt: "asc" },
+        select: { id: true, nom: true, typeMime: true, taille: true },
       },
       commentaires: {
         // Les commentaires supprimes ne sont charges que pour l'ADMIN
@@ -111,6 +124,37 @@ export default async function PageReflexion({
       <div className="mt-8 whitespace-pre-wrap text-lg leading-relaxed text-ona-text first-letter:float-left first-letter:mr-2 first-letter:mt-1 first-letter:font-display first-letter:text-6xl first-letter:font-semibold first-letter:leading-none first-letter:text-ona-primary">
         {reflexion.contenu}
       </div>
+
+      {reflexion.documents.length > 0 && (
+        <div className="mt-8 space-y-2">
+          {reflexion.documents.map((d) => {
+            const estPdf = d.typeMime === "application/pdf";
+            return (
+              <a
+                key={d.id}
+                href={`/api/documents/${d.id}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-3 rounded-lg border border-ona-border bg-ona-surface p-4 transition hover:border-ona-primary"
+              >
+                <FileText
+                  className="h-6 w-6 shrink-0 text-ona-primary"
+                  aria-hidden="true"
+                />
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate font-medium text-ona-text">
+                    {d.nom}
+                  </span>
+                  <span className="text-xs text-ona-text-muted">
+                    {estPdf ? "PDF" : "Word"} · {formaterTaille(d.taille)} ·{" "}
+                    {estPdf ? "Ouvrir" : "Télécharger"}
+                  </span>
+                </span>
+              </a>
+            );
+          })}
+        </div>
+      )}
 
       {reflexion.auteur.bio && (
         <div className="mt-10 rounded-lg border border-ona-border bg-ona-surface p-5">

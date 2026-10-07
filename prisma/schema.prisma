@@ -77,12 +77,29 @@ model Reflexion {
   auteurId     String
   auteur       User          @relation(fields: [auteurId], references: [id])
   commentaires Commentaire[]
+    documents    Document[]
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
 
   @@index([auteurId])
   @@index([publie, createdAt])
   @@index([type, publie, createdAt])
+}
+
+// Documents joints a une publication (PDF ou Word). Le fichier lui-meme
+// est stocke dans Supabase Storage (bucket prive "documents") ; la base
+// ne garde que ses informations et son emplacement.
+model Document {
+  id          String    @id @default(cuid())
+  nom         String // nom d'origine du fichier, affiche aux lecteurs
+  typeMime    String
+  taille      Int // en octets
+  chemin      String    @unique // emplacement dans le bucket "documents"
+  reflexionId String
+  reflexion   Reflexion @relation(fields: [reflexionId], references: [id], onDelete: Cascade)
+  createdAt   DateTime  @default(now())
+
+  @@index([reflexionId])
 }
 
 // parentId permet des fils de discussion (reponses a un commentaire) ;

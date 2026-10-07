@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { z } from "zod";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { supabaseAdmin, BUCKET_DOCUMENTS } from "@/lib/supabase";
 
 const modificationSchema = z.object({
   titre: z.string().min(3).max(200),
@@ -48,7 +49,7 @@ export async function PATCH(
   return NextResponse.json({ ok: true });
 }
 
-// DELETE : supprimer une reflexion et tous ses commentaires.
+// DELETE : supprimer une reflexion, ses commentaires et ses documents.
 // Autorise pour son auteur et pour l'ADMIN (moderation).
 export async function DELETE(
   _req: Request,
@@ -61,7 +62,7 @@ export async function DELETE(
 
   const reflexion = await prisma.reflexion.findUnique({
     where: { id: params.id },
-    select: { auteurId: true },
+    select: { auteurId: true, documents: { select: { chemin: true } } },
   });
   if (!reflexion) {
     return NextResponse.json(
@@ -75,8 +76,17 @@ export async function DELETE(
     return NextResponse.json({ erreur: "Non autorise." }, { status: 403 });
   }
 
-  // Les commentaires sont supprimes automatiquement (onDelete: Cascade)
+  // Les commentaires et les lignes Document sont supprimes automatiquement
+  // (onDelete: Cascade) ; les fichiers, eux, sont retires du stockage.
   await prisma.reflexion.delete({ where: { id: params.id } });
+
+  const chemins = reflexion.documents.map((d) => d.chemin);
+  if (chemins.length > 0) {
+    const { error } = await supabaseAdmin.storage
+      .from(BUCKET_DOCUMENTS)
+      .remove(chemins);
+    if (error) console.error("Fichiers non supprimes du stockage :", error);
+  }
 
   return NextResponse.json({ ok: true });
 }
