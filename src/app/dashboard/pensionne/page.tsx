@@ -3,6 +3,7 @@ import { HeartHandshake } from "lucide-react";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import EnteteEspace from "@/components/EnteteEspace";
+import EncartMemoire from "@/components/EncartMemoire";
 import ReflexionCard from "@/components/ReflexionCard";
 
 export default async function TableauPensionne() {
@@ -26,6 +27,8 @@ export default async function TableauPensionne() {
         couleur="text-ona-gold"
         fond="bg-ona-gold-bg"
       />
+
+      <EncartMemoire />
 
       <div className="mt-8 space-y-4">
         {reflexions.map((r, i) => (

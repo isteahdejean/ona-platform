@@ -3,6 +3,7 @@ import { ShieldCheck } from "lucide-react";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import EnteteEspace from "@/components/EnteteEspace";
+import EncartMemoire from "@/components/EncartMemoire";
 import ReflexionCard from "@/components/ReflexionCard";
 
 export default async function TableauAssure() {
@@ -26,6 +27,8 @@ export default async function TableauAssure() {
         couleur="text-ona-teal"
         fond="bg-ona-teal-bg"
       />
+
+      <EncartMemoire />
 
       <div className="mt-8 space-y-4">
         {reflexions.map((r, i) => (
