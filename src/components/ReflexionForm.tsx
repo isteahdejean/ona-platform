@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { Paperclip, X } from "lucide-react";
 import { createClient } from "@supabase/supabase-js";
 
@@ -29,6 +30,12 @@ export default function ReflexionForm({
   afficherChoixType?: boolean;
 }) {
   const router = useRouter();
+  const { data: session } = useSession();
+  // Le choix Reflexion / Revue n'apparait que pour l'equipe editoriale
+  const peutPublierRevue =
+    Boolean((session?.user as any)?.editeurRevue) ||
+    (session?.user as any)?.role === "ADMIN";
+  const montrerChoixType = afficherChoixType && peutPublierRevue;
   const inputFichier = useRef<HTMLInputElement>(null);
   const [titre, setTitre] = useState("");
   const [contenu, setContenu] = useState("");
@@ -133,7 +140,7 @@ export default function ReflexionForm({
         Publier une réflexion
       </p>
 
-      {afficherChoixType && (
+      {montrerChoixType && (
         <div className="mt-3 flex gap-2 text-sm">
           <button
             type="button"

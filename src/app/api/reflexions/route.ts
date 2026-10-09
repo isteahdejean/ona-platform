@@ -110,6 +110,16 @@ export async function POST(req: Request) {
     return NextResponse.json({ erreur: "Donnees invalides." }, { status: 400 });
   }
 
+  // La Revue est reservee a l'equipe editoriale (et a l'ADMIN)
+  const estEditeurRevue =
+    Boolean((session.user as any).editeurRevue) || role === "ADMIN";
+  if (parsed.data.type === "REVUE" && !estEditeurRevue) {
+    return NextResponse.json(
+      { erreur: "La Revue est reservee a l'equipe editoriale." },
+      { status: 403 },
+    );
+  }
+
   const doc = parsed.data.document;
   let infosDocument: { typeMime: string; taille: number } | null = null;
 

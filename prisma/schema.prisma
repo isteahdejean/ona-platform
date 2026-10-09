@@ -38,6 +38,8 @@ model User {
   bio           String?
   poste         String?
   role          Role?
+    // Membre de l'equipe editoriale : peut publier dans la Revue
+  editeurRevue  Boolean       @default(false)
   directionId   String?
   direction     Direction?    @relation(fields: [directionId], references: [id])
   // Bureau ou annexe ou travaille l'employe (optionnel : les assures et

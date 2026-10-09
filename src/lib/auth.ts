@@ -45,25 +45,28 @@ export const authOptions: NextAuthOptions = {
           name: user.name,
           email: user.email,
           role: user.role,
+          editeurRevue: user.editeurRevue,
         } as any;
       },
     }),
   ],
   callbacks: {
-    // On propage le role (et son absence) dans le token puis la session,
-    // pour que le middleware et les pages puissent decider quoi afficher.
+    // On propage le role et l'appartenance a l'equipe Revue dans le token
+    // puis la session, pour que le middleware et les pages puissent decider
+    // quoi afficher. Ils sont relus en base a chaque requete : un changement
+    // de role ou d'equipe s'applique sans avoir a se reconnecter.
     async jwt({ token, user }) {
       if (user) {
         token.role = (user as any).role ?? null;
+        token.editeurRevue = Boolean((user as any).editeurRevue);
         token.id = user.id;
       } else if (token.id) {
-        // On ne lit que le role : inutile de charger tout l'utilisateur
-        // (et sa photo) a chaque requete.
         const dbUser = await prisma.user.findUnique({
           where: { id: token.id as string },
-          select: { role: true },
+          select: { role: true, editeurRevue: true },
         });
         token.role = dbUser?.role ?? null;
+        token.editeurRevue = dbUser?.editeurRevue ?? false;
       }
       // La photo ne doit jamais etre stockee dans le cookie de session :
       // elle est servie par /api/user/photo.
@@ -74,6 +77,7 @@ export const authOptions: NextAuthOptions = {
       if (session.user) {
         (session.user as any).id = token.id;
         (session.user as any).role = token.role;
+        (session.user as any).editeurRevue = Boolean(token.editeurRevue);
         session.user.image = token.id ? `/api/user/photo?id=${token.id}` : null;
       }
       return session;
