@@ -11,6 +11,11 @@ import Slideshow from "@/components/Slideshow";
 import ReflexionCard from "@/components/ReflexionCard";
 import HeroActions from "@/components/HeroActions";
 
+// En dessous de ce nombre de membres, la bande de statistiques est remplacee
+// par une invitation (de petits chiffres donneraient l'impression d'un site
+// vide). Au-dela, les statistiques s'affichent automatiquement.
+const SEUIL_MEMBRES_STATISTIQUES = 50;
+
 const DIAPOS = [
   {
     src: "/batiment-ona.jpg",
@@ -77,22 +82,45 @@ const ESPACES = [
   },
 ];
 
+// "1 250" a la francaise
+function formaterNombre(n: number) {
+  return n.toLocaleString("fr-FR");
+}
+
 export default async function Accueil() {
-  const [dernieres, totalReflexions, totalMembres, totalCommentaires] =
-    await Promise.all([
-      prisma.reflexion.findMany({
-        where: { publie: true },
-        orderBy: { createdAt: "desc" },
-        take: 4,
-        include: {
-          auteur: { select: { id: true, name: true, role: true } },
-          _count: { select: { commentaires: { where: { supprime: false } } } },
-        },
-      }),
-      prisma.reflexion.count({ where: { publie: true } }),
-      prisma.user.count({ where: { role: { not: null } } }),
-      prisma.commentaire.count(),
-    ]);
+  const [
+    dernieres,
+    totalReflexions,
+    totalMemoires,
+    totalMembres,
+    totalCommentaires,
+  ] = await Promise.all([
+    prisma.reflexion.findMany({
+      where: { publie: true },
+      orderBy: { createdAt: "desc" },
+      take: 4,
+      include: {
+        auteur: { select: { id: true, name: true, role: true } },
+        _count: { select: { commentaires: { where: { supprime: false } } } },
+      },
+    }),
+    // Reflexions et entrees de la Revue (les memoires sont comptes a part)
+    prisma.reflexion.count({
+      where: { publie: true, type: { in: ["REFLEXION", "REVUE"] } },
+    }),
+    prisma.reflexion.count({ where: { publie: true, type: "MEMOIRE" } }),
+    prisma.user.count({ where: { role: { not: null } } }),
+    prisma.commentaire.count({ where: { supprime: false } }),
+  ]);
+
+  const afficherStatistiques = totalMembres >= SEUIL_MEMBRES_STATISTIQUES;
+
+  const STATISTIQUES = [
+    { valeur: totalReflexions, libelle: "Réflexions publiées" },
+    { valeur: totalMemoires, libelle: "Mémoires partagés" },
+    { valeur: totalMembres, libelle: "Membres inscrits" },
+    { valeur: totalCommentaires, libelle: "Commentaires échangés" },
+  ];
 
   return (
     <div>
@@ -138,32 +166,47 @@ export default async function Accueil() {
       </section>
 
       <section className="bg-ona-blue-bg">
-        <div className="mx-auto grid max-w-5xl grid-cols-3 divide-x divide-ona-primary/15 px-6 py-10 text-center">
-          <div>
-            <p className="font-display text-3xl font-semibold text-ona-primary sm:text-4xl">
-              {totalReflexions}
-            </p>
-            <p className="mt-1 text-xs uppercase tracking-wide text-ona-text-muted sm:text-sm">
-              Réflexions publiées
-            </p>
+        {afficherStatistiques ? (
+          // Statistiques : 2 colonnes sur telephone, 4 sur ordinateur
+          <div className="mx-auto grid max-w-5xl grid-cols-2 gap-y-8 px-6 py-10 text-center sm:grid-cols-4 sm:divide-x sm:divide-ona-primary/15">
+            {STATISTIQUES.map((s) => (
+              <div key={s.libelle}>
+                <p className="font-display text-3xl font-semibold text-ona-primary sm:text-4xl">
+                  {formaterNombre(s.valeur)}
+                </p>
+                <p className="mt-1 text-xs uppercase tracking-wide text-ona-text-muted sm:text-sm">
+                  {s.libelle}
+                </p>
+              </div>
+            ))}
           </div>
-          <div>
-            <p className="font-display text-3xl font-semibold text-ona-primary sm:text-4xl">
-              {totalMembres}
-            </p>
-            <p className="mt-1 text-xs uppercase tracking-wide text-ona-text-muted sm:text-sm">
-              Membres inscrits
-            </p>
+        ) : (
+          // Invitation, tant que la communaute est encore petite
+          <div className="mx-auto flex max-w-5xl flex-col items-center gap-4 px-6 py-10 text-center sm:flex-row sm:justify-between sm:text-left">
+            <div>
+              <p className="font-display text-2xl font-semibold text-ona-primary">
+                SI-ONA se construit avec vous.
+              </p>
+              <p className="mt-1 text-ona-text-muted">
+                Partagez une réflexion, un mémoire, ou rejoignez la discussion.
+              </p>
+            </div>
+            <div className="flex flex-wrap justify-center gap-3">
+              <Link
+                href="/memoires"
+                className="rounded-md bg-ona-primary px-4 py-2 text-sm font-medium text-white hover:bg-ona-primary-dark"
+              >
+                Découvrir les mémoires
+              </Link>
+              <Link
+                href="/revue"
+                className="rounded-md border border-ona-primary px-4 py-2 text-sm font-medium text-ona-primary hover:bg-white"
+              >
+                Lire la revue
+              </Link>
+            </div>
           </div>
-          <div>
-            <p className="font-display text-3xl font-semibold text-ona-primary sm:text-4xl">
-              {totalCommentaires}
-            </p>
-            <p className="mt-1 text-xs uppercase tracking-wide text-ona-text-muted sm:text-sm">
-              Commentaires échangés
-            </p>
-          </div>
-        </div>
+        )}
       </section>
 
       <section className="mx-auto max-w-5xl px-6 py-14">
