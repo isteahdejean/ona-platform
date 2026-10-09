@@ -3,6 +3,7 @@ import { Newsreader, Inter } from "next/font/google";
 import Providers from "@/components/Providers";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import FiligraneAnneaux from "@/components/FiligraneAnneaux";
 import "./globals.css";
 
 // Newsreader (titres) + Inter (texte courant), telechargees et auto-hebergees
@@ -47,9 +48,21 @@ export default function RootLayout({
     <html lang="fr" className={`${newsreader.variable} ${inter.variable}`}>
       <body className="font-body min-h-screen flex flex-col">
         <Providers>
+          {/* Filigrane d'anneaux sur tout le site : fixe a l'ecran, derriere
+              le contenu, visible seulement la ou le fond est apparent */}
+          <div
+            aria-hidden="true"
+            className="pointer-events-none fixed inset-0 z-0 overflow-hidden"
+          >
+            <FiligraneAnneaux coin="haut-droite" opacite={0.05} />
+            <FiligraneAnneaux coin="bas-gauche" opacite={0.05} />
+          </div>
+
           <Header />
-          <main className="flex-1">{children}</main>
-          <Footer />
+          <main className="relative z-[1] flex-1">{children}</main>
+          <div className="relative z-[1]">
+            <Footer />
+          </div>
         </Providers>
       </body>
     </html>

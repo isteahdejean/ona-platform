@@ -10,6 +10,7 @@ import { prisma } from "@/lib/prisma";
 import Slideshow from "@/components/Slideshow";
 import ReflexionCard from "@/components/ReflexionCard";
 import HeroActions from "@/components/HeroActions";
+import FiligraneAnneaux from "@/components/FiligraneAnneaux";
 
 // En dessous de ce nombre de membres, la bande de statistiques est remplacee
 // par une invitation (de petits chiffres donneraient l'impression d'un site
@@ -165,10 +166,11 @@ export default async function Accueil() {
         </svg>
       </section>
 
-      <section className="bg-ona-blue-bg">
+      <section className="relative overflow-hidden bg-ona-blue-bg">
+        <FiligraneAnneaux coin="bas-gauche" />
         {afficherStatistiques ? (
           // Statistiques : 2 colonnes sur telephone, 4 sur ordinateur
-          <div className="mx-auto grid max-w-5xl grid-cols-2 gap-y-8 px-6 py-10 text-center sm:grid-cols-4 sm:divide-x sm:divide-ona-primary/15">
+          <div className="relative mx-auto grid max-w-5xl grid-cols-2 gap-y-8 px-6 py-10 text-center sm:grid-cols-4 sm:divide-x sm:divide-ona-primary/15">
             {STATISTIQUES.map((s) => (
               <div key={s.libelle}>
                 <p className="font-display text-3xl font-semibold text-ona-primary sm:text-4xl">
@@ -182,7 +184,7 @@ export default async function Accueil() {
           </div>
         ) : (
           // Invitation, tant que la communaute est encore petite
-          <div className="mx-auto flex max-w-5xl flex-col items-center gap-4 px-6 py-10 text-center sm:flex-row sm:justify-between sm:text-left">
+          <div className="relative mx-auto flex max-w-5xl flex-col items-center gap-4 px-6 py-10 text-center sm:flex-row sm:justify-between sm:text-left">
             <div>
               <p className="font-display text-2xl font-semibold text-ona-primary">
                 SI-ONA se construit avec vous.
@@ -237,8 +239,10 @@ export default async function Accueil() {
         ))}
       </section>
 
-      <section className="border-y border-ona-border bg-ona-surface">
-        <div className="mx-auto max-w-3xl px-6 py-16 text-center">
+      <section className="relative overflow-hidden border-y border-ona-border bg-ona-surface">
+        <FiligraneAnneaux coin="haut-droite" />
+        <div className="relative mx-auto max-w-3xl px-6 py-16 text-center">
+          {" "}
           <div className="mx-auto flex h-1 w-16 overflow-hidden rounded-full">
             <div className="w-1/2 bg-ona-primary" />
             <div className="w-1/2 bg-ona-accent" />
