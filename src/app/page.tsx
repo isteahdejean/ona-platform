@@ -12,6 +12,11 @@ import ReflexionCard from "@/components/ReflexionCard";
 import HeroActions from "@/components/HeroActions";
 import FiligraneAnneaux from "@/components/FiligraneAnneaux";
 
+// Page recalculee a chaque visite : les dernieres reflexions et les
+// statistiques sont toujours a jour (sinon Vercel servirait une "photo"
+// prise au moment du deploiement).
+export const dynamic = "force-dynamic";
+
 // En dessous de ce nombre de membres, la bande de statistiques est remplacee
 // par une invitation (de petits chiffres donneraient l'impression d'un site
 // vide). Au-dela, les statistiques s'affichent automatiquement.
@@ -242,7 +247,6 @@ export default async function Accueil() {
       <section className="relative overflow-hidden border-y border-ona-border bg-ona-surface">
         <FiligraneAnneaux coin="haut-droite" />
         <div className="relative mx-auto max-w-3xl px-6 py-16 text-center">
-          {" "}
           <div className="mx-auto flex h-1 w-16 overflow-hidden rounded-full">
             <div className="w-1/2 bg-ona-primary" />
             <div className="w-1/2 bg-ona-accent" />
